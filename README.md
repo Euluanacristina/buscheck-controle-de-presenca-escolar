@@ -2,37 +2,19 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# 🚌 BusCheck - Controle de Presença Escolar
+# Run and deploy your AI Studio app
 
-Dashboard web para controle de presença de transporte escolar, com foco em simplicidade e praticidade para uso mobile e desktop.
+This contains everything you need to run your app locally.
 
-## 📋 Sobre o Projeto
+View your app in AI Studio: https://ai.studio/apps/98199d79-5cd4-432c-8373-7f7a22cc490a
 
-Sistema desenvolvido para facilitar o controle diário de presença dos alunos no transporte escolar. Permite marcar presença/ausência de forma rápida e visual, com indicadores de mensalidades pendentes.
+## Run Locally
 
-## ✨ Funcionalidades
+**Prerequisites:**  Node.js
 
-- ✅ **Controle de Presença**: Marque presença ou falta com um clique
-- 📊 **Dashboard com Estatísticas**: Visualize totais de alunos, presentes, ausentes e pendentes
-- 🔍 **Busca Rápida**: Encontre alunos por nome ou escola
-- 🏫 **Filtros Inteligentes**: Filtre por período (Manhã/Tarde/Noite) e escola
-- 📱 **Responsivo**: Funciona perfeitamente em celulares, tablets e desktop
 
-## 🎨 Tecnologias Utilizadas
-
-- **Google AI Studio** - Interface de desenvolvimento
-- **localStorage** - Armazenamento local dos dados
-
-## 💾 Armazenamento de Dados
-
-Os dados são salvos localmente no navegador usando **localStorage**:
-- ✅ Funciona offline
-- ✅ Não requer servidor ou banco de dados
-- ⚠️ Dados ficam apenas no navegador atual (não sincroniza entre dispositivos)
-
-## Desenvolvido para facilitar o dia a dia do transporte escolar.
-
----
-
-**Versão:** 1.0.0  
-**Última atualização:** Março 2026
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`

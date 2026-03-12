@@ -12,10 +12,6 @@ dist
 dist-ssr
 *.local
 
-# Project history/internal files
-migrated_prompt_history/
-metadata.json
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

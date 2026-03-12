@@ -96,11 +96,6 @@ const App: React.FC = () => {
       const matchesStatus = !filters.status || student.status === filters.status;
       const matchesPending = !filters.onlyPendingPayment || student.isPendingPayment;
       return matchesSearch && matchesSchool && matchesPeriod && matchesStatus && matchesPending;
-    }).sort((a, b) => {
-      // Prioritize pending payment students
-      if (a.isPendingPayment && !b.isPendingPayment) return -1;
-      if (!a.isPendingPayment && b.isPendingPayment) return 1;
-      return a.name.localeCompare(b.name);
     });
   }, [students, filters]);
 
@@ -146,7 +141,7 @@ const App: React.FC = () => {
       pendingSince: newStudent.isPendingPayment ? new Date().toLocaleDateString('pt-BR') : undefined
     };
 
-    setStudents(prev => [student, ...prev]);
+    setStudents(prev => [...prev, student]);
     setNewStudent({ name: '', school: '', period: 'Manhã', isPendingPayment: false });
     setShowAddForm(false);
     setToast({ message: 'Cadastrado com sucesso!', type: 'success' });
