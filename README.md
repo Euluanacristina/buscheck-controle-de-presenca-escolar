@@ -1,3 +1,7 @@
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
+
 # 🚌 BusCheck - Controle de Presença Escolar
 
 Dashboard web para controle de presença de transporte escolar, com foco em simplicidade e praticidade para uso mobile e desktop.
@@ -18,50 +22,8 @@ Sistema desenvolvido para facilitar o controle diário de presença dos alunos n
 ## 🎨 Tecnologias Utilizadas
 
 - **Google AI Studio** - Interface de desenvolvimento
-- **Material Design** - Design system e componentes
 - **Google Material Icons** - Biblioteca de ícones
 - **localStorage** - Armazenamento local dos dados
-
-## 🚀 Como Usar
-
-### Marcando Presença
-
-1. Localize o aluno na lista (use a busca se necessário)
-2. Clique no botão **verde (✓)** para marcar presença
-3. Clique no botão **vermelho (✗)** para marcar falta
-4. Os contadores são atualizados automaticamente
-
-### Aplicando Filtros
-
-**Por Período:**
-- Clique em "Manhã", "Tarde" ou "Noite" no topo
-- Os números nos cards refletem apenas os alunos do período selecionado
-
-**Por Escola:**
-- Use o filtro de escolas para visualizar alunos de instituições específicas
-- Combine filtros de período e escola para maior precisão
-
-### Gerenciando Escolas
-
-- Digite o nome de uma nova escola no campo de cadastro
-- A escola será automaticamente adicionada às opções de filtro
-- Escolas são salvas localmente no navegador
-
-## 📊 Cards de Estatísticas
-
-| Card | Descrição |
-|------|-----------|
-| 👥 **Total** | Número total de alunos (considerando filtros ativos) |
-| ✅ **Presentes** | Alunos com presença marcada |
-| ❌ **Ausentes** | Alunos com falta marcada |
-| ⚠️ **Pendentes** | Alunos com mensalidade em atraso |
-
-## 🎯 Indicadores Visuais
-
-- **Borda verde**: Aluno com presença confirmada
-- **Borda vermelha**: Aluno com falta confirmada
-- **Badge amarelo "Pendente"**: Mensalidade em atraso
-- **Fundo amarelo claro**: Aluno com pagamento pendente
 
 ## 💾 Armazenamento de Dados
 
@@ -87,24 +49,7 @@ Erro:           #EF4444 (Vermelho)
 Alerta:         #F59E0B (Laranja)
 ```
 
-## 🔄 Próximas Melhorias
-
-- [ ] Integração com banco de dados
-- [ ] Sincronização entre dispositivos
-- [ ] Relatórios exportáveis (PDF/Excel)
-- [ ] Histórico de presença por aluno
-- [ ] Notificações automáticas para pais
-- [ ] Modo offline completo (PWA)
-
-## 👥 Autor
-
-Desenvolvido para facilitar o dia a dia do transporte escolar.
-
----
-
-## 📄 Licença
-
-Este projeto é de uso livre para fins educacionais e pessoais.
+## Desenvolvido para facilitar o dia a dia do transporte escolar.
 
 ---
 
