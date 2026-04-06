@@ -11,6 +11,7 @@ export interface Student {
   status: AttendanceStatus;
   isPendingPayment?: boolean;
   pendingSince?: string;
+  order: number;
 }
 
 export interface AttendanceStats {

@@ -1,5 +1,7 @@
 
 import React, { useState } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Student, AttendanceStatus } from '../types';
 
 interface StudentCardProps {
@@ -7,11 +9,37 @@ interface StudentCardProps {
   onUpdateStatus: (id: string, status: AttendanceStatus) => void;
   onDelete: (id: string) => void;
   onTogglePayment: (id: string) => void;
+  isDragDisabled?: boolean;
 }
 
-const StudentCard: React.FC<StudentCardProps> = ({ student, onUpdateStatus, onDelete, onTogglePayment }) => {
+const StudentCard: React.FC<StudentCardProps> = ({ 
+  student, 
+  onUpdateStatus, 
+  onDelete, 
+  onTogglePayment,
+  isDragDisabled = false
+}) => {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ 
+    id: student.id,
+    disabled: isDragDisabled
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.8 : undefined,
+  };
+
   const isPresent = student.status === 'present';
   const isAbsent = student.status === 'absent';
   const isPending = student.status === 'pending';
@@ -19,12 +47,15 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onUpdateStatus, onDe
 
   return (
     <div 
+      ref={setNodeRef}
+      style={style}
       className={`
         relative overflow-hidden rounded-2xl border transition-all duration-300 p-4 mb-3
         ${isPresent ? 'border-emerald-500 bg-emerald-50/20' : ''}
         ${isAbsent ? 'border-rose-500 bg-rose-50/20' : ''}
         ${isPending && !isPendingPayment ? 'bg-white border-slate-200 shadow-sm' : ''}
         ${isPendingPayment ? 'bg-[#FFFBEB] border-[#FCD34D] shadow-sm' : ''}
+        ${isDragging ? 'shadow-2xl rotate-2 cursor-grabbing' : ''}
       `}
     >
       {isPendingPayment && (
@@ -40,6 +71,16 @@ const StudentCard: React.FC<StudentCardProps> = ({ student, onUpdateStatus, onDe
 
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3 flex-grow min-w-0">
+          {/* Drag Handle */}
+          <div 
+            {...attributes} 
+            {...listeners}
+            className={`flex items-center justify-center w-6 h-10 -ml-2 rounded-lg transition-colors ${isDragDisabled ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 cursor-grab hover:bg-slate-100'}`}
+            title={isDragDisabled ? "Remova os filtros para reordenar" : "Arraste para reordenar"}
+          >
+            <span className="material-icons">drag_indicator</span>
+          </div>
+
           <div 
             onClick={() => onTogglePayment(student.id)}
             className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer

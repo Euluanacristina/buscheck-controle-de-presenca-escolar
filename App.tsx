@@ -1,5 +1,21 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  TouchSensor,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import Header from './components/Header';
 import StatsCards from './components/StatsCards';
 import SearchBar from './components/SearchBar';
@@ -12,7 +28,10 @@ import { Student, AttendanceStatus, AttendanceStats, FilterOptions, Period } fro
 const App: React.FC = () => {
   const [students, setStudents] = useState<Student[]>(() => {
     const saved = localStorage.getItem('buscheck_students');
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+    const parsed = JSON.parse(saved) as Student[];
+    // Ensure all students have an order field
+    return parsed.map((s, i) => ({ ...s, order: s.order ?? i })).sort((a, b) => a.order - b.order);
   });
   
   const [schools, setSchools] = useState<string[]>(() => {
@@ -138,7 +157,8 @@ const App: React.FC = () => {
       period: newStudent.period,
       status: 'pending',
       isPendingPayment: newStudent.isPendingPayment,
-      pendingSince: newStudent.isPendingPayment ? new Date().toLocaleDateString('pt-BR') : undefined
+      pendingSince: newStudent.isPendingPayment ? new Date().toLocaleDateString('pt-BR') : undefined,
+      order: students.length
     };
 
     setStudents(prev => [...prev, student]);
@@ -159,6 +179,47 @@ const App: React.FC = () => {
   };
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isOrderLocked, setIsOrderLocked] = useState(() => {
+    return localStorage.getItem('buscheck_order_locked') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('buscheck_order_locked', String(isOrderLocked));
+  }, [isOrderLocked]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setStudents((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over.id);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        // Update order field for persistence
+        return newItems.map((item, index) => ({ ...item, order: index }));
+      });
+      setToast({ message: 'Posição atualizada', type: 'success' });
+    }
+  };
+
+  const isFilterActive = !!(filters.search || filters.school || filters.period || filters.status || filters.onlyPendingPayment);
 
   const handleDeleteSchool = (schoolName: string) => {
     if (window.confirm(`Deseja realmente excluir a escola "${schoolName}"? Alunos vinculados a esta escola ficarão sem escola definida.`)) {
@@ -293,32 +354,52 @@ const App: React.FC = () => {
             <h2 className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest">
               LISTA DE ALUNOS ({filteredStudents.length})
             </h2>
-            {students.length > 0 && (
-              <button 
-                onClick={handleResetAttendance}
-                className={`text-[10px] md:text-[11px] font-bold px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 border shadow-sm ${
-                  isConfirmingReset 
-                    ? 'bg-rose-600 border-rose-600 text-white animate-pulse' 
-                    : 'bg-white border-slate-200 text-slate-500'
-                }`}
-              >
-                <span className="material-icons text-sm">{isConfirmingReset ? 'warning' : 'restart_alt'}</span>
-                {isConfirmingReset ? 'CONFIRMAR?' : 'ZERAR HOJE'}
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {isFilterActive && (
+                <span className="text-[10px] font-bold text-amber-500 flex items-center gap-1 animate-pulse">
+                  <span className="material-icons text-sm">info</span>
+                  Limpe os filtros para reordenar
+                </span>
+              )}
+              {students.length > 0 && (
+                <button 
+                  onClick={handleResetAttendance}
+                  className={`text-[10px] md:text-[11px] font-bold px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 border shadow-sm ${
+                    isConfirmingReset 
+                      ? 'bg-rose-600 border-rose-600 text-white animate-pulse' 
+                      : 'bg-white border-slate-200 text-slate-500'
+                  }`}
+                >
+                  <span className="material-icons text-sm">{isConfirmingReset ? 'warning' : 'restart_alt'}</span>
+                  {isConfirmingReset ? 'CONFIRMAR?' : 'ZERAR HOJE'}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-1">
             {filteredStudents.length > 0 ? (
-              filteredStudents.map(student => (
-                <StudentCard 
-                  key={student.id} 
-                  student={student} 
-                  onUpdateStatus={handleUpdateStatus}
-                  onDelete={handleDeleteStudent}
-                  onTogglePayment={handleTogglePayment}
-                />
-              ))
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={filteredStudents.map(s => s.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {filteredStudents.map(student => (
+                    <StudentCard 
+                      key={student.id} 
+                      student={student} 
+                      onUpdateStatus={handleUpdateStatus}
+                      onDelete={handleDeleteStudent}
+                      onTogglePayment={handleTogglePayment}
+                      isDragDisabled={isFilterActive || isOrderLocked}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             ) : (
               <div className="flex flex-col items-center justify-center py-16 text-slate-400 bg-white rounded-[32px] border border-slate-100 shadow-sm">
                 <span className="material-icons text-5xl mb-3 text-slate-200">
@@ -456,6 +537,27 @@ const App: React.FC = () => {
             </div>
             
             <div className="p-6 max-h-[60vh] overflow-y-auto space-y-3">
+              <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="material-icons text-slate-400">lock</span>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-slate-800">Bloquear Ordem</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-black">Evita alterações acidentais</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsOrderLocked(!isOrderLocked)}
+                  className={`w-12 h-6 rounded-full transition-colors relative ${isOrderLocked ? 'bg-blue-600' : 'bg-slate-200'}`}
+                >
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isOrderLocked ? 'left-7' : 'left-1'}`} />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-icons text-slate-400 text-sm">school</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Escolas</span>
+              </div>
+
               {schools.length === 0 ? (
                 <div className="text-center py-8 text-slate-400">
                   <span className="material-icons text-4xl mb-2">history_edu</span>
